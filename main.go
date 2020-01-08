@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	//Create map for journal entries
 	journalEntries := map[string]string{}
 
 	reader := bufio.NewReader(os.Stdin)
