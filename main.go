@@ -32,7 +32,12 @@ func main() {
 	statement.Exec(journalDate, journalEntry)
 
 	// Prints entire table of journal_entries
-	rows, _ := database.Query("SELECT * FROM journal_entries")
+
+	printEntireJournal(database)
+}
+
+func printEntireJournal(d *sql.DB) {
+	rows, _ := d.Query("SELECT * FROM journal_entries")
 	var id int
 	var date string
 	var entry string
