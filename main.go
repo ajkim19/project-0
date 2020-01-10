@@ -31,11 +31,10 @@ func main() {
 	statement, _ = database.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
 	statement.Exec(journalDate, journalEntry)
 
-	// Prints entire table of journal_entries
-
-	printEntireJournal(database)
+	// printEntireJournal(database)
 }
 
+// Prints entire table of journal_entries
 func printEntireJournal(d *sql.DB) {
 	rows, _ := d.Query("SELECT * FROM journal_entries")
 	var id int
