@@ -19,19 +19,24 @@ func main() {
 	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS journal_entries (id INTEGER PRIMARY KEY, date TEXT, entry TEXT)")
 	statement.Exec()
 
+	inputEntry(database)
+	printEntireJournal(database)
+}
+
+// Adds journal entry into database
+func inputEntry(d *sql.DB) {
 	// Prompts user for journal input
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input Journal Entry:")
+	fmt.Println("Input journal entry:")
 	journalEntry, _ := reader.ReadString('\n')
+	journalEntry = journalEntry[:len(journalEntry)-1]
 
 	// Grabs the date of the entry made
 	journalDate := string(time.Now().Format("01-02-2006"))
 
 	// Inserts date and entry into the database
-	statement, _ = database.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
+	statement, _ := d.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
 	statement.Exec(journalDate, journalEntry)
-
-	// printEntireJournal(database)
 }
 
 // Prints entire table of journal_entries
@@ -44,4 +49,31 @@ func printEntireJournal(d *sql.DB) {
 		rows.Scan(&id, &date, &entry)
 		fmt.Println(strconv.Itoa(id) + ": " + date + " " + entry)
 	}
+}
+
+func deleteTable(d *sql.DB) {
+	statement, _ := d.Prepare("DROP TABLE journal_entries")
+	statement.Exec()
+}
+
+func deleteEntry(d *sql.DB) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Input date of journal entry to delete:")
+	journalDate, _ := reader.ReadString('\n')
+
+	statement, _ := d.Prepare("DELETE FROM journal_entries WHERE date = ?")
+	statement.Exec(journalDate)
+}
+
+func searchEntry(d *sql.DB) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Input date of journal entry to view:")
+	journalDate, _ := reader.ReadString('\n')
+
+	statement, _ := d.Prepare("SELECT * FROM journal_entries WHERE date = ?")
+	statement.Exec(journalDate)
+}
+
+func editEntry(d *sql.DB) {
+
 }
