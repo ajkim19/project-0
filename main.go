@@ -22,8 +22,12 @@ func main() {
 	//inputEntry(database)
 	//printEntireJournal(database)
 	//searchEntry(database)
-	editEntry(database)
+	//editEntry(database)
 }
+
+var id int
+var date string
+var entry string
 
 // Adds journal entry into database
 func inputEntry(d *sql.DB) {
@@ -36,28 +40,48 @@ func inputEntry(d *sql.DB) {
 	// Grabs the date of the entry made
 	journalDate := string(time.Now().Format("01-02-2006"))
 
-	// Inserts date and entry into the database
-	statement, _ := d.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
-	statement.Exec(journalDate, journalEntry)
+	rows, _ := d.Query("SELECT * FROM journal_entries")
+	dateExists := false
+
+	for rows.Next() {
+		rows.Scan(&id, &date, &entry)
+		if journalDate == date {
+			dateExists = true
+		}
+	}
+
+	if dateExists {
+		rows, _ = d.Query("SELECT * FROM journal_entries")
+		rows.Scan(&id, &date, &entry)
+		journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
+
+		// Inserts date and entry into the database
+		statement, _ := d.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
+		statement.Exec(journalEntry, journalDate)
+
+	} else {
+		// Inserts date and entry into the database
+		statement, _ := d.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
+		statement.Exec(journalDate, journalEntry)
+	}
 }
 
 // Prints entire table of journal_entries
 func printEntireJournal(d *sql.DB) {
 	rows, _ := d.Query("SELECT * FROM journal_entries")
-	var id int
-	var date string
-	var entry string
 	for rows.Next() {
 		rows.Scan(&id, &date, &entry)
 		fmt.Println(strconv.Itoa(id) + ": " + date + " " + entry)
 	}
 }
 
+// Deletes the entire table of journal_entries
 func deleteTable(d *sql.DB) {
 	statement, _ := d.Prepare("DROP TABLE journal_entries")
 	statement.Exec()
 }
 
+// Deletes the entry of a particular date
 func deleteEntry(d *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Input date of journal entry to delete:")
@@ -67,6 +91,7 @@ func deleteEntry(d *sql.DB) {
 	statement.Exec(journalDate)
 }
 
+// Prints the entry of a particular date
 func searchEntry(d *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Input date of journal entry to view:")
@@ -75,15 +100,13 @@ func searchEntry(d *sql.DB) {
 
 	rows, _ := d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
 
-	var id int
-	var date string
-	var entry string
 	for rows.Next() {
 		rows.Scan(&id, &date, &entry)
 		fmt.Println(strconv.Itoa(id) + ": " + date + " " + entry)
 	}
 }
 
+// Replaces the entry of a particular date
 func editEntry(d *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Input date of journal entry to edit:")
@@ -91,9 +114,6 @@ func editEntry(d *sql.DB) {
 	journalDate = journalDate[:len(journalDate)-1]
 
 	rows, _ := d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	var id int
-	var date string
-	var entry string
 	for rows.Next() {
 		rows.Scan(&id, &date, &entry)
 		fmt.Println(strconv.Itoa(id) + ": " + date + " " + entry)
