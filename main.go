@@ -19,8 +19,10 @@ func main() {
 	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS journal_entries (id INTEGER PRIMARY KEY, date TEXT, entry TEXT)")
 	statement.Exec()
 
-	inputEntry(database)
-	printEntireJournal(database)
+	//inputEntry(database)
+	//printEntireJournal(database)
+	//searchEntry(database)
+	editEntry(database)
 }
 
 // Adds journal entry into database
@@ -69,11 +71,45 @@ func searchEntry(d *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Input date of journal entry to view:")
 	journalDate, _ := reader.ReadString('\n')
+	journalDate = journalDate[:len(journalDate)-1]
 
-	statement, _ := d.Prepare("SELECT * FROM journal_entries WHERE date = ?")
-	statement.Exec(journalDate)
+	rows, _ := d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
+
+	var id int
+	var date string
+	var entry string
+	for rows.Next() {
+		rows.Scan(&id, &date, &entry)
+		fmt.Println(strconv.Itoa(id) + ": " + date + " " + entry)
+	}
 }
 
 func editEntry(d *sql.DB) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Input date of journal entry to edit:")
+	journalDate, _ := reader.ReadString('\n')
+	journalDate = journalDate[:len(journalDate)-1]
 
+	rows, _ := d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
+	var id int
+	var date string
+	var entry string
+	for rows.Next() {
+		rows.Scan(&id, &date, &entry)
+		fmt.Println(strconv.Itoa(id) + ": " + date + " " + entry)
+	}
+
+	fmt.Println("Input replacement entry:")
+	journalEntry, _ := reader.ReadString('\n')
+	journalEntry = journalEntry[:len(journalEntry)-1]
+	fmt.Println(journalEntry)
+
+	statement, _ := d.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
+	statement.Exec(journalEntry, journalDate)
+
+	rows, _ = d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
+	for rows.Next() {
+		rows.Scan(&id, &date, &entry)
+		fmt.Println(strconv.Itoa(id) + ": " + date + " " + entry)
+	}
 }
