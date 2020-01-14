@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 
 	"github.com/ajkim19/project-0/journal"
 	_ "github.com/mattn/go-sqlite3"
@@ -19,6 +20,11 @@ func main() {
 	var delete bool
 	var edit bool
 	var all bool
+
+	flag.BoolVar(&view, "view", false, "view entry")
+	flag.BoolVar(&delete, "delete", false, "delete entry")
+	flag.BoolVar(&edit, "edit", false, "edit entry")
+	flag.BoolVar(&all, "all", false, "apply to every entry")
 
 	switch {
 	case view == true:
