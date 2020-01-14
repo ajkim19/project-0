@@ -25,6 +25,7 @@ func main() {
 	flag.BoolVar(&delete, "delete", false, "delete entry")
 	flag.BoolVar(&edit, "edit", false, "edit entry")
 	flag.BoolVar(&all, "all", false, "apply to every entry")
+	flag.Parse()
 
 	switch {
 	case view == true:
