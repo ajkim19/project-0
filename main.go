@@ -15,6 +15,8 @@ func main() {
 	// Creates table if it does not exist
 	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS journal_entries (id INTEGER PRIMARY KEY, date TEXT, entry TEXT)")
 	statement.Exec()
+	// statement, _ = database.Prepare("INSERT INTO journal_entries (date, entry) VALUES ('01-01-2020', 'It's New Year's Day!')")
+	// statement.Exec()
 
 	var view bool
 	var delete bool
@@ -28,14 +30,14 @@ func main() {
 	flag.Parse()
 
 	switch {
-	case view == true:
-		journal.ViewEntry(database)
 	case view == true && all == true:
 		journal.ViewEntireJournal(database)
-	case delete == true:
-		journal.DeleteEntry(database)
+	case view == true:
+		journal.ViewEntry(database)
 	case delete == true && all == true:
 		journal.DeleteTable(database)
+	case delete == true:
+		journal.DeleteEntry(database)
 	case edit == true:
 		journal.EditEntry(database)
 	default:

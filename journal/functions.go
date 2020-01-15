@@ -49,6 +49,7 @@ func InputEntry(d *sql.DB) {
 	}
 
 	rows, _ = d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
+	rows.Next()
 	rows.Scan(&id, &date, &entry)
 	fmt.Println(date + ": " + entry)
 }
@@ -62,10 +63,9 @@ func ViewEntry(d *sql.DB) {
 
 	rows, _ := d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
 
-	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
-		fmt.Println(date + ": " + entry)
-	}
+	rows.Next()
+	rows.Scan(&id, &date, &entry)
+	fmt.Println(date + ": " + entry)
 }
 
 // ViewEntireJournal prints the entire table of journal_entries
@@ -101,10 +101,9 @@ func EditEntry(d *sql.DB) {
 	journalDate = journalDate[:len(journalDate)-1]
 
 	rows, _ := d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
-		fmt.Println(date + ": " + entry)
-	}
+	rows.Next()
+	rows.Scan(&id, &date, &entry)
+	fmt.Println(date + ": " + entry)
 
 	fmt.Println("Input replacement entry:")
 	journalEntry, _ := reader.ReadString('\n')
@@ -114,8 +113,7 @@ func EditEntry(d *sql.DB) {
 	statement.Exec(journalEntry, journalDate)
 
 	rows, _ = d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
-		fmt.Println(date + ": " + entry)
-	}
+	rows.Next()
+	rows.Scan(&id, &date, &entry)
+	fmt.Println(date + ": " + entry)
 }
