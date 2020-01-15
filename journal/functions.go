@@ -34,21 +34,22 @@ func InputEntry(d *sql.DB) {
 	}
 
 	if dateExists {
+		// Adds entry onto the entry with the same date into the database if an entry for the date already exists
 		rows, _ = d.Query("SELECT * FROM journal_entries")
 		rows.Scan(&id, &date, &entry)
 		journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
 
-		// Adds entry onto the entry with the same date into the database
 		statement, _ := d.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
 		statement.Exec(journalEntry, journalDate)
 
 	} else {
-		// Inserts date and entry into the database
+		// Inserts date and entry into the database if an entry for the date does not already exists
 		statement, _ := d.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
 		statement.Exec(journalDate, journalEntry)
 	}
 
 	rows, _ = d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
+	rows.Next()
 	rows.Scan(&id, &date, &entry)
 	fmt.Println(date + ": " + entry)
 }
@@ -62,10 +63,9 @@ func ViewEntry(d *sql.DB) {
 
 	rows, _ := d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
 
-	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
-		fmt.Println(date + ": " + entry)
-	}
+	rows.Next()
+	rows.Scan(&id, &date, &entry)
+	fmt.Println(date + ": " + entry)
 }
 
 // ViewEntireJournal prints the entire table of journal_entries
@@ -101,10 +101,9 @@ func EditEntry(d *sql.DB) {
 	journalDate = journalDate[:len(journalDate)-1]
 
 	rows, _ := d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
-		fmt.Println(date + ": " + entry)
-	}
+	rows.Next()
+	rows.Scan(&id, &date, &entry)
+	fmt.Println(date + ": " + entry)
 
 	fmt.Println("Input replacement entry:")
 	journalEntry, _ := reader.ReadString('\n')
@@ -114,8 +113,7 @@ func EditEntry(d *sql.DB) {
 	statement.Exec(journalEntry, journalDate)
 
 	rows, _ = d.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
-		fmt.Println(date + ": " + entry)
-	}
+	rows.Next()
+	rows.Scan(&id, &date, &entry)
+	fmt.Println(date + ": " + entry)
 }
