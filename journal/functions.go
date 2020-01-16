@@ -6,24 +6,35 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"log"
 )
 
 var id int
 var date string
 var entry string
 
-// InputEntry adds journal entry into database
+// InputEntry adds the current date as a string and prompts user for
+// a journal entry input to be stored into a sql database in association
+// with the date. If an entry for the specified date already exists,
+// the preexisting entry will be printed out and the user will be prompted
+// to add to the entry. A new line and the entry will then be concatenated
+// to the preexisting entry. Lastly, InputEntry prints the date and
+// the complete entry.
 func InputEntry(d *sql.DB) {
-	// Prompts user for journal input
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Input journal entry:")
-	journalEntry, _ := reader.ReadString('\n')
+	journalEntry, err1 := reader.ReadString('\n')\
+	if err1 != nil {
+		log.Fatal(err1)
+	}
 	journalEntry = journalEntry[:len(journalEntry)-1]
 
-	// Grabs the date of the entry made
 	journalDate := string(time.Now().Format("01-02-2006"))
 
-	rows, _ := d.Query("SELECT * FROM journal_entries")
+	rows, err2 := d.Query("SELECT * FROM journal_entries")
+	if err2 != nil {
+		log.Fatal(err2)
+	}
 	dateExists := false
 
 	for rows.Next() {
@@ -34,17 +45,24 @@ func InputEntry(d *sql.DB) {
 	}
 
 	if dateExists {
-		// Adds entry onto the entry with the same date into the database if an entry for the date already exists
-		rows, _ = d.Query("SELECT * FROM journal_entries")
+		rows, err2 = d.Query("SELECT * FROM journal_entries")
+		if err2 != nil {
+			log.Fatal(err2)
+		}
 		rows.Scan(&id, &date, &entry)
 		journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
 
-		statement, _ := d.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
+		statement, err3 := d.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
+		if err3 != nil {
+			log.Fatal(err3)
+		}
 		statement.Exec(journalEntry, journalDate)
 
 	} else {
-		// Inserts date and entry into the database if an entry for the date does not already exists
-		statement, _ := d.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
+		statement, err3 := d.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
+		if err3 != nil {
+			log.Fatal(err3)
+		}
 		statement.Exec(journalDate, journalEntry)
 	}
 
@@ -70,7 +88,11 @@ func ViewEntry(d *sql.DB) {
 
 // ViewEntireJournal prints the entire table of journal_entries
 func ViewEntireJournal(d *sql.DB) {
-	rows, _ := d.Query("SELECT * FROM journal_entries")
+	rows, err := d.Query("SELECT * FROM journal_entries")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for rows.Next() {
 		rows.Scan(&id, &date, &entry)
 		fmt.Println(date + ": " + entry)
@@ -83,13 +105,20 @@ func DeleteEntry(d *sql.DB) {
 	fmt.Println("Input date of journal entry to delete:")
 	journalDate, _ := reader.ReadString('\n')
 
-	statement, _ := d.Prepare("DELETE FROM journal_entries WHERE date = ?")
+	statement, err := d.Prepare("DELETE FROM journal_entries WHERE date = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
 	statement.Exec(journalDate)
+	
 }
 
 // DeleteTable deletes the entire table of journal_entries
 func DeleteTable(d *sql.DB) {
-	statement, _ := d.Prepare("DROP TABLE journal_entries")
+	statement, err := d.Prepare("DROP TABLE journal_entries")
+	if err != nil {
+		log.Fatal(err)
+	}
 	statement.Exec()
 }
 
