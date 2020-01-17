@@ -13,19 +13,43 @@ var delete bool
 var edit bool
 var all bool
 var database *sql.DB
-var err1 error
+var err error
+var id int
+var date string
+var entry string
+var dateExists bool
 
 func init() {
-	database, err1 = sql.Open("sqlite3", "./journal.db")
-	if err1 != nil {
-		log.Fatal(err1)
+	database, err = sql.Open("sqlite3", "./journal.db")
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	statement, err2 := database.Prepare("CREATE TABLE IF NOT EXISTS journal_entries (id INTEGER PRIMARY KEY, date TEXT, entry TEXT)")
-	if err2 != nil {
-		log.Fatal(err2)
+	statement, err := database.Prepare("CREATE TABLE IF NOT EXISTS journal_entries (id INTEGER PRIMARY KEY, date TEXT, entry TEXT)")
+	if err != nil {
+		log.Fatal(err)
 	}
 	statement.Exec()
+
+	rows, err := database.Query("SELECT * FROM journal_entries")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for rows.Next() {
+		rows.Scan(&id, &date, &entry)
+		if date == "01-01-2020" {
+			dateExists = true
+		}
+	}
+
+	if dateExists == false {
+		statement, err := database.Prepare("INSERT INTO journal_entries (date, entry) VALUES ('01-01-2020', 'Today is New Year's Day!')")
+		if err != nil {
+			log.Fatal(err)
+		}
+		statement.Exec()
+	}
 
 	flag.BoolVar(&view, "view", false, "view entry")
 	flag.BoolVar(&delete, "delete", false, "delete entry")

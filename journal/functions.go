@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"time"
-	"log"
 )
 
 var id int
@@ -23,18 +23,19 @@ var entry string
 func InputEntry(d *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Input journal entry:")
-	journalEntry, err1 := reader.ReadString('\n')\
-	if err1 != nil {
-		log.Fatal(err1)
+	journalEntry, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
 	}
 	journalEntry = journalEntry[:len(journalEntry)-1]
 
 	journalDate := string(time.Now().Format("01-02-2006"))
 
-	rows, err2 := d.Query("SELECT * FROM journal_entries")
-	if err2 != nil {
-		log.Fatal(err2)
+	rows, err := d.Query("SELECT * FROM journal_entries")
+	if err != nil {
+		log.Fatal(err)
 	}
+
 	dateExists := false
 
 	for rows.Next() {
@@ -45,23 +46,23 @@ func InputEntry(d *sql.DB) {
 	}
 
 	if dateExists {
-		rows, err2 = d.Query("SELECT * FROM journal_entries")
-		if err2 != nil {
-			log.Fatal(err2)
+		rows, err = d.Query("SELECT * FROM journal_entries")
+		if err != nil {
+			log.Fatal(err)
 		}
 		rows.Scan(&id, &date, &entry)
 		journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
 
-		statement, err3 := d.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
-		if err3 != nil {
-			log.Fatal(err3)
+		statement, err := d.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
+		if err != nil {
+			log.Fatal(err)
 		}
 		statement.Exec(journalEntry, journalDate)
 
 	} else {
-		statement, err3 := d.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
-		if err3 != nil {
-			log.Fatal(err3)
+		statement, err := d.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
+		if err != nil {
+			log.Fatal(err)
 		}
 		statement.Exec(journalDate, journalEntry)
 	}
@@ -110,11 +111,11 @@ func DeleteEntry(d *sql.DB) {
 		log.Fatal(err)
 	}
 	statement.Exec(journalDate)
-	
+
 }
 
-// DeleteTable deletes the entire table of journal_entries
-func DeleteTable(d *sql.DB) {
+// DeleteJournal deletes the entire table of journal_entries
+func DeleteJournal(d *sql.DB) {
 	statement, err := d.Prepare("DROP TABLE journal_entries")
 	if err != nil {
 		log.Fatal(err)
