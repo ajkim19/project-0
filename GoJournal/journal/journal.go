@@ -33,6 +33,7 @@ func InputEntry(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer rows.Close()
 
 	dateExists := false
 
@@ -53,14 +54,19 @@ func InputEntry(db *sql.DB) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		rows.Scan(&id, &date, &entry)
-
-		journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
+		for rows.Next() {
+			err := rows.Scan(&id, &date, &entry)
+			if err != nil {
+				log.Fatal(err)
+			}
+			journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
+		}
 
 		statement, err := db.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer statement.Close()
 		statement.Exec(journalEntry, journalDate)
 
 	} else {
@@ -68,6 +74,7 @@ func InputEntry(db *sql.DB) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer statement.Close()
 		statement.Exec(journalDate, journalEntry)
 
 	}
@@ -108,6 +115,7 @@ func InputEntryDate(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer rows.Close()
 
 	dateExists := false
 
@@ -128,14 +136,19 @@ func InputEntryDate(db *sql.DB) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		rows.Next()
-		rows.Scan(&id, &date, &entry)
-		journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
+		for rows.Next() {
+			err := rows.Scan(&id, &date, &entry)
+			if err != nil {
+				log.Fatal(err)
+			}
+			journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
+		}
 
 		statement, err := db.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer statement.Close()
 		statement.Exec(journalEntry, journalDate)
 
 	} else {
@@ -143,6 +156,7 @@ func InputEntryDate(db *sql.DB) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer statement.Close()
 		statement.Exec(journalDate, journalEntry)
 	}
 
@@ -174,6 +188,7 @@ func ViewEntry(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		err := rows.Scan(&id, &date, &entry)
@@ -187,10 +202,10 @@ func ViewEntry(db *sql.DB) {
 // ViewEntireJournal prints every date and entry of journal_entries
 func ViewEntireJournal(db *sql.DB) {
 	rows, err := db.Query("SELECT * FROM journal_entries ORDER BY date")
-
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		err := rows.Scan(&id, &date, &entry)
@@ -206,16 +221,16 @@ func DeleteEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Input date of journal entry to delete (MM-DD-YYYY):")
 	journalDate, err := reader.ReadString('\n')
-	journalDate = journalDate[:len(journalDate)-1]
-
 	if err != nil {
 		log.Fatal(err)
 	}
+	journalDate = journalDate[:len(journalDate)-1]
 
 	statement, err := db.Prepare("DELETE FROM journal_entries WHERE date = ?")
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer statement.Close()
 	statement.Exec(journalDate)
 }
 
@@ -239,6 +254,7 @@ func EditEntry(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&id, &date, &entry)
 		if err != nil {
@@ -258,6 +274,7 @@ func EditEntry(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer statement.Close()
 	statement.Exec(journalEntry, journalDate)
 
 	rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
