@@ -211,7 +211,6 @@ func DeleteEntry(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(journalDate)
 
 	statement, err := db.Prepare("DELETE FROM journal_entries WHERE date = ?")
 	if err != nil {
