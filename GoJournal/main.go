@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ajkim19/project-0/GoJournal/journal"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -13,18 +14,22 @@ func main() {
 
 	fmt.Println("Welcome to GoJournal!")
 
-	switch {
-	case d == true:
+	switch flag1 {
+	case "d":
 		journal.InputEntryDate(database)
-	case view == true && all == true:
-		journal.ViewEntireJournal(database)
-	case view == true:
-		journal.ViewEntry(database)
-	case delete == true && all == true:
-		journal.DeleteJournal(database)
-	case delete == true:
-		journal.DeleteEntry(database)
-	case edit == true:
+	case "view":
+		if flag2 == "all" {
+			journal.ViewEntireJournal(database)
+		} else {
+			journal.ViewEntry(database)
+		}
+	case "delete":
+		if flag2 == "all" {
+			journal.DeleteJournal(database)
+		} else {
+			journal.DeleteEntry(database)
+		}
+	case "edit":
 		journal.EditEntry(database)
 	default:
 		journal.InputEntry(database)

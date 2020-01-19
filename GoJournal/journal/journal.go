@@ -20,17 +20,16 @@ var entry string // Temporary storage of entry value of table journal_entries
 // with the date.
 func InputEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input journal entry:")
+	fmt.Println(`Input journal entry:`)
 	journalEntry, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	journalEntry = journalEntry[:len(journalEntry)-1]
 
 	journalDate := string(time.Now().Format("01-02-2006"))
 
-	rows, err := db.Query("SELECT * FROM journal_entries")
+	rows, err := db.Query(`SELECT * FROM journal_entries WHERE date = ?`, journalDate)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,7 +37,10 @@ func InputEntry(db *sql.DB) {
 	dateExists := false
 
 	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&id, &date, &entry)
+		if err != nil {
+			log.Fatal(err)
+		}
 		if journalDate == date {
 			dateExists = true
 		}
@@ -47,11 +49,12 @@ func InputEntry(db *sql.DB) {
 	// If the date of the entry already exists, the entry will be added	to
 	// the preexisting entry after a new line.
 	if dateExists {
-		rows, err = db.Query("SELECT * FROM journal_entries")
+		rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
 		if err != nil {
 			log.Fatal(err)
 		}
 		rows.Scan(&id, &date, &entry)
+
 		journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
 
 		statement, err := db.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
@@ -66,15 +69,20 @@ func InputEntry(db *sql.DB) {
 			log.Fatal(err)
 		}
 		statement.Exec(journalDate, journalEntry)
+
 	}
 
 	rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
 	if err != nil {
 		log.Fatal(err)
 	}
-	rows.Next()
-	rows.Scan(&id, &date, &entry)
-	fmt.Println(date + ":\n" + entry)
+	for rows.Next() {
+		err := rows.Scan(&id, &date, &entry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(date + ":\n" + entry)
+	}
 }
 
 // InputEntryDate prompts the user for a date as a string and prompts the user
@@ -82,7 +90,7 @@ func InputEntry(db *sql.DB) {
 // with the date.
 func InputEntryDate(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input date (mm-dd-yyyy): ")
+	fmt.Println("Input date (MM-DD-YYYY): ")
 	journalDate, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
@@ -94,6 +102,7 @@ func InputEntryDate(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	journalEntry = journalEntry[:len(journalEntry)-1]
 
 	rows, err := db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
 	if err != nil {
@@ -102,19 +111,24 @@ func InputEntryDate(db *sql.DB) {
 
 	dateExists := false
 
-	rows.Next()
-	rows.Scan(&id, &date, &entry)
-	if journalDate == date {
-		dateExists = true
+	for rows.Next() {
+		err := rows.Scan(&id, &date, &entry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if journalDate == date {
+			dateExists = true
+		}
 	}
 
 	// If the date of the entry already exists, the entry will be added	to
 	// the preexisting entry after a new line.
 	if dateExists {
-		rows, err = db.Query("SELECT * FROM journal_entries")
+		rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
 		if err != nil {
 			log.Fatal(err)
 		}
+		rows.Next()
 		rows.Scan(&id, &date, &entry)
 		journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
 
@@ -136,16 +150,21 @@ func InputEntryDate(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rows.Next()
-	rows.Scan(&id, &date, &entry)
-	fmt.Println(date + ":\n" + entry)
+	for rows.Next() {
+		err := rows.Scan(&id, &date, &entry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(date + ":\n" + entry)
+	}
 }
 
 // ViewEntry prints the date and entry of a particular date
 func ViewEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input date of journal entry to view:")
+	fmt.Println("Input date of journal entry to view (MM-DD-YYYY):")
 	journalDate, err := reader.ReadString('\n')
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -156,20 +175,28 @@ func ViewEntry(db *sql.DB) {
 		log.Fatal(err)
 	}
 
-	rows.Next()
-	rows.Scan(&id, &date, &entry)
-	fmt.Println(date + ":\n" + entry)
+	for rows.Next() {
+		err := rows.Scan(&id, &date, &entry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(date + ":\n" + entry)
+	}
 }
 
 // ViewEntireJournal prints every date and entry of journal_entries
 func ViewEntireJournal(db *sql.DB) {
-	rows, err := db.Query("SELECT * FROM journal_entries")
+	rows, err := db.Query("SELECT * FROM journal_entries ORDER BY date")
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&id, &date, &entry)
+		if err != nil {
+			log.Fatal(err)
+		}
 		fmt.Println(date + ":\n" + entry)
 	}
 }
@@ -177,18 +204,20 @@ func ViewEntireJournal(db *sql.DB) {
 // DeleteEntry deletes the record of a particular date
 func DeleteEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input date of journal entry to delete:")
+	fmt.Println("Input date of journal entry to delete (MM-DD-YYYY):")
 	journalDate, err := reader.ReadString('\n')
+	journalDate = journalDate[:len(journalDate)-1]
+
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(journalDate)
 
 	statement, err := db.Prepare("DELETE FROM journal_entries WHERE date = ?")
 	if err != nil {
 		log.Fatal(err)
 	}
 	statement.Exec(journalDate)
-
 }
 
 // DeleteJournal deletes the entire table of journal_entries
@@ -211,9 +240,13 @@ func EditEntry(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rows.Next()
-	rows.Scan(&id, &date, &entry)
-	fmt.Println(date + ": " + entry)
+	for rows.Next() {
+		err := rows.Scan(&id, &date, &entry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(date + ":\n" + entry)
+	}
 
 	fmt.Println("Input replacement entry:")
 	journalEntry, err := reader.ReadString('\n')
@@ -232,7 +265,12 @@ func EditEntry(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rows.Next()
-	rows.Scan(&id, &date, &entry)
-	fmt.Println(date + ": " + entry)
+
+	for rows.Next() {
+		err := rows.Scan(&id, &date, &entry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(date + ":\n" + entry)
+	}
 }

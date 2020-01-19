@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"flag"
 	"log"
+	"os"
+	"regexp"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -13,6 +15,8 @@ var view bool        // Flag to view table journal_entries
 var delete bool      // Flag to delete from table journal_entries
 var edit bool        // Flag to edit journal_entries
 var all bool         // Flag to apply alteration to the entire table of journal_entries
+var flag1 string     // First flag string
+var flag2 string     // Second flag string
 var database *sql.DB // Pointer to database handle
 var err error        // Temporary storage of error value
 var id int           // Temporary storage of id value of table journal_entries
@@ -63,4 +67,17 @@ func init() {
 	flag.BoolVar(&edit, "edit", false, "edit entry")
 	flag.BoolVar(&all, "all", false, "apply to every entry")
 	flag.Parse()
+
+	// Removes special characters of flags
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(os.Args) == 2 {
+		flag1 = reg.ReplaceAllString(os.Args[1], "")
+	} else if len(os.Args) > 2 {
+		flag1 = reg.ReplaceAllString(os.Args[1], "")
+		flag2 = reg.ReplaceAllString(os.Args[2], "")
+	}
 }
