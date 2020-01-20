@@ -228,18 +228,7 @@ func EditEntry(db *sql.DB) {
 		fmt.Println("Incorrect date format. Please try again.")
 	}
 
-	rows, err := db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(&dbid, &dbdate, &dbentry)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(dbdate + ":\n" + dbentry)
-	}
+	printEntry(db, journalDate)
 
 	fmt.Println("Input replacement entry:")
 	journalEntry, err := reader.ReadString('\n')
