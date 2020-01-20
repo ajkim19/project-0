@@ -211,7 +211,7 @@ func EditEntry(db *sql.DB) {
 
 	for {
 		fmt.Println("Input date of journal entry to edit:")
-		journalDate, err := reader.ReadString('\n')
+		journalDate, err = reader.ReadString('\n')
 		if err != nil {
 			log.Fatal(err)
 		}
