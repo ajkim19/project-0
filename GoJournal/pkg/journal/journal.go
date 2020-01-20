@@ -29,148 +29,10 @@ func InputEntry(db *sql.DB) {
 
 	journalDate := string(time.Now().Format("01-02-2006"))
 
-	rows, err := db.Query(`SELECT * FROM journal_entries WHERE date = ?`, journalDate)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
+	ifEntryExists(db, journalEntry, journalDate)
 
-	dateExists := false
+	printEntry(db, journalDate)
 
-	for rows.Next() {
-		err := rows.Scan(&dbid, &dbdate, &dbentry)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if journalDate == dbdate {
-			dateExists = true
-		}
-	}
-
-	// If the date of the entry already exists, the entry will be added	to
-	// the preexisting entry after a new line.
-	if dateExists {
-		rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-		if err != nil {
-			log.Fatal(err)
-		}
-		for rows.Next() {
-			err := rows.Scan(&dbid, &dbdate, &dbentry)
-			if err != nil {
-				log.Fatal(err)
-			}
-			journalEntry = fmt.Sprint(dbentry + "\n\n" + journalEntry)
-		}
-
-		statement, err := db.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer statement.Close()
-		statement.Exec(journalEntry, journalDate)
-
-	} else {
-		statement, err := db.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer statement.Close()
-		statement.Exec(journalDate, journalEntry)
-
-	}
-
-	rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for rows.Next() {
-		err := rows.Scan(&dbid, &dbdate, &dbentry)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(dbdate + ":\n" + dbentry)
-	}
-}
-
-// InputEntryDate prompts the user for a date as a string and prompts the user
-// for a journal entry input to be stored into the database in association
-// with the date.
-func InputEntryDate(db *sql.DB) {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input date (MM-DD-YYYY): ")
-	journalDate, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
-	}
-	journalDate = journalDate[:len(journalDate)-1]
-
-	fmt.Println("Input journal entry:")
-	journalEntry, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
-	}
-	journalEntry = journalEntry[:len(journalEntry)-1]
-
-	rows, err := db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	dateExists := false
-
-	for rows.Next() {
-		err := rows.Scan(&dbid, &dbdate, &dbentry)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if journalDate == dbdate {
-			dateExists = true
-		}
-	}
-
-	// If the date of the entry already exists, the entry will be added	to
-	// the preexisting entry after a new line.
-	if dateExists {
-		rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-		if err != nil {
-			log.Fatal(err)
-		}
-		for rows.Next() {
-			err := rows.Scan(&dbid, &dbdate, &dbentry)
-			if err != nil {
-				log.Fatal(err)
-			}
-			journalEntry = fmt.Sprint(dbentry + "\n\n" + journalEntry)
-		}
-
-		statement, err := db.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer statement.Close()
-		statement.Exec(journalEntry, journalDate)
-
-	} else {
-		statement, err := db.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer statement.Close()
-		statement.Exec(journalDate, journalEntry)
-	}
-
-	rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for rows.Next() {
-		err := rows.Scan(&dbid, &dbdate, &dbentry)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(dbdate + ":\n" + dbentry)
-	}
 }
 
 // ViewEntry prints the date and entry of a particular date
@@ -277,11 +139,92 @@ func EditEntry(db *sql.DB) {
 	defer statement.Close()
 	statement.Exec(journalEntry, journalDate)
 
-	rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
+	printEntry(db, journalDate)
+}
+
+// InputEntryDate prompts the user for a date as a string and prompts the user
+// for a journal entry input to be stored into the database in association
+// with the date.
+func InputEntryDate(db *sql.DB) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Input date (MM-DD-YYYY): ")
+	journalDate, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
 	}
+	journalDate = journalDate[:len(journalDate)-1]
 
+	fmt.Println("Input journal entry:")
+	journalEntry, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+	journalEntry = journalEntry[:len(journalEntry)-1]
+
+	ifEntryExists(db, journalEntry, journalDate)
+
+	printEntry(db, journalDate)
+}
+
+// ifEntryExists checks to see if an entry for a certain date already exists
+// in the table journal_entires in a specified SQL database.
+func ifEntryExists(db *sql.DB, journalEntry string, journalDate string) {
+	rows, err := db.Query(`SELECT * FROM journal_entries WHERE date = ?`, journalDate)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	dateExists := false
+
+	for rows.Next() {
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if journalDate == dbdate {
+			dateExists = true
+		}
+	}
+
+	// If the date of the entry already exists, the entry will be added	to
+	// the preexisting entry after a new line.
+	if dateExists {
+		rows, err = db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for rows.Next() {
+			err := rows.Scan(&dbid, &dbdate, &dbentry)
+			if err != nil {
+				log.Fatal(err)
+			}
+			journalEntry = fmt.Sprint(dbentry + "\n\n" + journalEntry)
+		}
+
+		statement, err := db.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer statement.Close()
+		statement.Exec(journalEntry, journalDate)
+
+	} else {
+		statement, err := db.Prepare("INSERT INTO journal_entries (date, entry) VALUES (?, ?)")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer statement.Close()
+		statement.Exec(journalDate, journalEntry)
+	}
+}
+
+// printEntry prints the entry of a specified date onto the console
+func printEntry(db *sql.DB, journalDate string) {
+	rows, err := db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
+	if err != nil {
+		log.Fatal(err)
+	}
 	for rows.Next() {
 		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
