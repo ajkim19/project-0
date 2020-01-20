@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -20,24 +21,69 @@ var dbentry string // entry value of table journal_entries
 // with the date.
 func InputEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println(`Input journal entry:`)
+
+	fmt.Println("Add An Entry")
+
+	journalDate := string(time.Now().Format("01-02-2006"))
+
+	fmt.Printf("Input journal entry for %s:\n", journalDate)
 	journalEntry, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
 	}
 	journalEntry = journalEntry[:len(journalEntry)-1]
 
-	journalDate := string(time.Now().Format("01-02-2006"))
+	ifEntryExists(db, journalEntry, journalDate)
+
+	printEntry(db, journalDate)
+}
+
+// InputEntryDate prompts the user for a date as a string and prompts the user
+// for a journal entry input to be stored into the database in association
+// with the date.
+func InputEntryDate(db *sql.DB) {
+	var journalDate string
+	var err error
+
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Println("Input date (MM-DD-YYYY): ")
+		journalDate, err = reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+		journalDate = journalDate[:len(journalDate)-1]
+
+		// Checks to see if the inputted date is in the correct format
+		matched, err := regexp.MatchString(`(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)[0-9][0-9]`, journalDate)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if matched == true {
+			break
+		}
+		fmt.Println("Incorrect date format. Please try again.")
+	}
+
+	fmt.Println("Input journal entry:")
+	journalEntry, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+	journalEntry = journalEntry[:len(journalEntry)-1]
 
 	ifEntryExists(db, journalEntry, journalDate)
 
 	printEntry(db, journalDate)
-
 }
 
 // ViewEntry prints the date and entry of a particular date
 func ViewEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println("View An Entry")
+
 	fmt.Println("Input date of journal entry to view (MM-DD-YYYY):")
 	journalDate, err := reader.ReadString('\n')
 
@@ -63,6 +109,8 @@ func ViewEntry(db *sql.DB) {
 
 // ViewEntireJournal prints every date and entry of journal_entries
 func ViewEntireJournal(db *sql.DB) {
+	fmt.Println("View All Entries")
+
 	rows, err := db.Query("SELECT * FROM journal_entries ORDER BY date")
 	if err != nil {
 		log.Fatal(err)
@@ -80,13 +128,31 @@ func ViewEntireJournal(db *sql.DB) {
 
 // DeleteEntry deletes the record of a particular date
 func DeleteEntry(db *sql.DB) {
+	var journalDate string
+	var err error
+
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input date of journal entry to delete (MM-DD-YYYY):")
-	journalDate, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
+
+	fmt.Println("Delete An Entry")
+
+	for {
+		fmt.Println("Input date of journal entry to delete (MM-DD-YYYY):")
+		journalDate, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+		journalDate = journalDate[:len(journalDate)-1]
+
+		// Checks to see if the inputted date is in the correct format
+		matched, err := regexp.MatchString(`(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)[0-9][0-9]`, journalDate)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if matched == true {
+			break
+		}
+		fmt.Println("Incorrect date format. Please try again.")
 	}
-	journalDate = journalDate[:len(journalDate)-1]
 
 	statement, err := db.Prepare("DELETE FROM journal_entries WHERE date = ?")
 	if err != nil {
@@ -98,19 +164,69 @@ func DeleteEntry(db *sql.DB) {
 
 // DeleteJournal deletes the entire table of journal_entries
 func DeleteJournal(db *sql.DB) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println("Delete All Entries")
+
+	for {
+		fmt.Print("Are you sure you want to delete all of your entries? (Y/n): ")
+
+		choice, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+		choice = choice[:len(choice)-1]
+
+		// Checks to see if the input is valid
+		matched, err := regexp.MatchString(`[Y]|[n]`, choice)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if matched == true {
+			if choice == "Y" {
+				break
+			} else {
+				return
+			}
+		}
+		fmt.Println("Not a valid choice. Please try again.")
+	}
+
 	statement, err := db.Prepare("DROP TABLE journal_entries")
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer statement.Close()
 	statement.Exec()
 }
 
 // EditEntry replaces the entry of a particular date
 func EditEntry(db *sql.DB) {
+	var journalDate string
+	var err error
+
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input date of journal entry to edit:")
-	journalDate, _ := reader.ReadString('\n')
-	journalDate = journalDate[:len(journalDate)-1]
+
+	fmt.Println("Edit an Entry")
+
+	for {
+		fmt.Println("Input date of journal entry to edit:")
+		journalDate, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+		journalDate = journalDate[:len(journalDate)-1]
+
+		// Checks to see if the inputted date is in the correct format
+		matched, err := regexp.MatchString(`(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)[0-9][0-9]`, journalDate)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if matched == true {
+			break
+		}
+		fmt.Println("Incorrect date format. Please try again.")
+	}
 
 	rows, err := db.Query("SELECT * FROM journal_entries WHERE date = ?", journalDate)
 	if err != nil {
@@ -138,30 +254,6 @@ func EditEntry(db *sql.DB) {
 	}
 	defer statement.Close()
 	statement.Exec(journalEntry, journalDate)
-
-	printEntry(db, journalDate)
-}
-
-// InputEntryDate prompts the user for a date as a string and prompts the user
-// for a journal entry input to be stored into the database in association
-// with the date.
-func InputEntryDate(db *sql.DB) {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Input date (MM-DD-YYYY): ")
-	journalDate, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
-	}
-	journalDate = journalDate[:len(journalDate)-1]
-
-	fmt.Println("Input journal entry:")
-	journalEntry, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
-	}
-	journalEntry = journalEntry[:len(journalEntry)-1]
-
-	ifEntryExists(db, journalEntry, journalDate)
 
 	printEntry(db, journalDate)
 }
@@ -225,6 +317,7 @@ func printEntry(db *sql.DB, journalDate string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
