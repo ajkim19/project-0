@@ -2,7 +2,6 @@ package journal
 
 import (
 	"database/sql"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -44,11 +43,9 @@ func TestViewEntireJournal(t *testing.T) {
 	rescueStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	body, _ := ioutil.ReadAll(w)
-	fmt.Println(string(body))
+
 	ViewEntireJournal(database)
-	body, _ = ioutil.ReadAll(w)
-	fmt.Println(string(body))
+
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	os.Stdout = rescueStdout
