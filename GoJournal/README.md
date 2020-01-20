@@ -1,2 +1,2 @@
-# project-0
+# GoJournal
 # Author: Aaron Kim
