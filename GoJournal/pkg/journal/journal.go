@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-var dbid int       // Temporary storage of id value of table journal_entries
-var dbdate string  // Temporary storage of date value of table journal_entries
-var dbentry string // Temporary storage of entry value of table journal_entries
+var dbid int       // id value of table journal_entries
+var dbdate string  // date value of table journal_entries
+var dbentry string // entry value of table journal_entries
 
 // InputEntry adds the current date as a string and prompts the user for
 // a journal entry input to be stored into the database in association
