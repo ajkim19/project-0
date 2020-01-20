@@ -15,7 +15,7 @@ func main() {
 	fmt.Println("Welcome to GoJournal!")
 
 	switch flag1 {
-	case "d":
+	case "date":
 		journal.InputEntryDate(database)
 	case "view":
 		if flag2 == "all" {

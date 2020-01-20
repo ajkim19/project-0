@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-var id int       // Temporary storage of id value of table journal_entries
-var date string  // Temporary storage of date value of table journal_entries
-var entry string // Temporary storage of entry value of table journal_entries
+var dbid int       // Temporary storage of id value of table journal_entries
+var dbdate string  // Temporary storage of date value of table journal_entries
+var dbentry string // Temporary storage of entry value of table journal_entries
 
 // InputEntry adds the current date as a string and prompts the user for
 // a journal entry input to be stored into the database in association
@@ -38,11 +38,11 @@ func InputEntry(db *sql.DB) {
 	dateExists := false
 
 	for rows.Next() {
-		err := rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if journalDate == date {
+		if journalDate == dbdate {
 			dateExists = true
 		}
 	}
@@ -55,11 +55,11 @@ func InputEntry(db *sql.DB) {
 			log.Fatal(err)
 		}
 		for rows.Next() {
-			err := rows.Scan(&id, &date, &entry)
+			err := rows.Scan(&dbid, &dbdate, &dbentry)
 			if err != nil {
 				log.Fatal(err)
 			}
-			journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
+			journalEntry = fmt.Sprint(dbentry + "\n\n" + journalEntry)
 		}
 
 		statement, err := db.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
@@ -84,11 +84,11 @@ func InputEntry(db *sql.DB) {
 		log.Fatal(err)
 	}
 	for rows.Next() {
-		err := rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(date + ":\n" + entry)
+		fmt.Println(dbdate + ":\n" + dbentry)
 	}
 }
 
@@ -120,11 +120,11 @@ func InputEntryDate(db *sql.DB) {
 	dateExists := false
 
 	for rows.Next() {
-		err := rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if journalDate == date {
+		if journalDate == dbdate {
 			dateExists = true
 		}
 	}
@@ -137,11 +137,11 @@ func InputEntryDate(db *sql.DB) {
 			log.Fatal(err)
 		}
 		for rows.Next() {
-			err := rows.Scan(&id, &date, &entry)
+			err := rows.Scan(&dbid, &dbdate, &dbentry)
 			if err != nil {
 				log.Fatal(err)
 			}
-			journalEntry = fmt.Sprint(entry + "\n\n" + journalEntry)
+			journalEntry = fmt.Sprint(dbentry + "\n\n" + journalEntry)
 		}
 
 		statement, err := db.Prepare("UPDATE journal_entries SET entry = ? WHERE date = ?")
@@ -165,11 +165,11 @@ func InputEntryDate(db *sql.DB) {
 		log.Fatal(err)
 	}
 	for rows.Next() {
-		err := rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(date + ":\n" + entry)
+		fmt.Println(dbdate + ":\n" + dbentry)
 	}
 }
 
@@ -191,11 +191,11 @@ func ViewEntry(db *sql.DB) {
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(date + ":\n" + entry)
+		fmt.Println(dbdate + ":\n" + dbentry)
 	}
 }
 
@@ -208,11 +208,11 @@ func ViewEntireJournal(db *sql.DB) {
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(date + ":\n" + entry)
+		fmt.Println(dbdate + ":\n" + dbentry)
 	}
 }
 
@@ -256,11 +256,11 @@ func EditEntry(db *sql.DB) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(date + ":\n" + entry)
+		fmt.Println(dbdate + ":\n" + dbentry)
 	}
 
 	fmt.Println("Input replacement entry:")
@@ -283,10 +283,10 @@ func EditEntry(db *sql.DB) {
 	}
 
 	for rows.Next() {
-		err := rows.Scan(&id, &date, &entry)
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(date + ":\n" + entry)
+		fmt.Println(dbdate + ":\n" + dbentry)
 	}
 }

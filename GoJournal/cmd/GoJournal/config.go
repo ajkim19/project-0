@@ -10,7 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var d bool           // Flag to input an entry for a particular date
+var date bool        // Flag to input an entry for a particular date
 var view bool        // Flag to view table journal_entries
 var delete bool      // Flag to delete from table journal_entries
 var edit bool        // Flag to edit journal_entries
@@ -19,9 +19,9 @@ var flag1 string     // First flag string
 var flag2 string     // Second flag string
 var database *sql.DB // Pointer to database handle
 var err error        // Temporary storage of error value
-var id int           // Temporary storage of id value of table journal_entries
-var date string      // Temporary storage of date value of table journal_entries
-var entry string     // Temporary storage of entry value of table journal_entries
+var dbid int         // Temporary storage of id value of table journal_entries
+var dbdate string    // Temporary storage of date value of table journal_entries
+var dbentry string   // Temporary storage of entry value of table journal_entries
 
 func init() {
 	// Makes a handle for the database journal
@@ -45,8 +45,8 @@ func init() {
 	var dateExists bool
 
 	for rows.Next() {
-		rows.Scan(&id, &date, &entry)
-		if date == "01-01-2020" {
+		rows.Scan(&dbid, &dbdate, &dbentry)
+		if dbdate == "01-01-2020" {
 			dateExists = true
 		}
 	}
@@ -61,7 +61,7 @@ func init() {
 	}
 
 	// Initalizes the flags
-	flag.BoolVar(&d, "d", false, "add entry to specified date")
+	flag.BoolVar(&date, "date", false, "add entry to specified date")
 	flag.BoolVar(&view, "view", false, "view entry")
 	flag.BoolVar(&delete, "delete", false, "delete entry")
 	flag.BoolVar(&edit, "edit", false, "edit entry")
