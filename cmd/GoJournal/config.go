@@ -46,7 +46,7 @@ func init() {
 
 	for rows.Next() {
 		rows.Scan(&dbid, &dbdate, &dbentry)
-		if dbdate == "01-01-2020" {
+		if dbdate == "01-06-2020" {
 			dateExists = true
 		}
 	}
