@@ -12,7 +12,8 @@ func main() {
 
 	http.Handle("/", http.FileServer(http.Dir("html")))
 	http.HandleFunc("/GoJournal", func(w http.ResponseWriter, r *http.Request) {
-		var entry string = r.FormValue("entry")
+		w.Header().Set("Content-Type", "text/html")
+		var entry = r.FormValue("name")
 		if entry == "" {
 			entry = "Random Entry"
 		}
