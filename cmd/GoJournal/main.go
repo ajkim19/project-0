@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ajkim19/project-0/GoJournal/pkg/journal"
+	"github.com/ajkim19/project-0/pkg/journal"
 
 	_ "github.com/mattn/go-sqlite3"
 )
