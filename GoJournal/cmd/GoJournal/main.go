@@ -12,7 +12,10 @@ func main() {
 	// Closes the database once the program has finished
 	defer database.Close()
 
-	fmt.Println("Welcome to GoJournal!")
+	fmt.Println(" _______________________")
+	fmt.Println("|                       |")
+	fmt.Println("| Welcome to GoJournal! |")
+	fmt.Println("|_______________________|\n")
 
 	switch flag1 {
 	case "date":

@@ -53,7 +53,7 @@ func init() {
 
 	// Adds an entry to journal_entries if it is empty
 	if dateExists == false {
-		statement, err := database.Prepare(`INSERT INTO journal_entries (date, entry) VALUES ("01-01-2020", "Today is New Year's Day!")`)
+		statement, err := database.Prepare(`INSERT INTO journal_entries (date, entry) VALUES ("01-06-2020", "Welcome to Revature!")`)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -22,7 +22,7 @@ var dbentry string // entry value of table journal_entries
 func InputEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Add An Entry")
+	fmt.Println("Add An Entry For Today\n")
 
 	journalDate := string(time.Now().Format("01-02-2006"))
 
@@ -47,6 +47,8 @@ func InputEntryDate(db *sql.DB) {
 
 	reader := bufio.NewReader(os.Stdin)
 
+	fmt.Println("Add An Entry For Another Date\n")
+
 	for {
 		fmt.Println("Input date (MM-DD-YYYY): ")
 		journalDate, err = reader.ReadString('\n')
@@ -66,7 +68,7 @@ func InputEntryDate(db *sql.DB) {
 		fmt.Println("Incorrect date format. Please try again.")
 	}
 
-	fmt.Println("Input journal entry:")
+	fmt.Printf("Input journal entry for %s:\n", journalDate)
 	journalEntry, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
@@ -82,7 +84,7 @@ func InputEntryDate(db *sql.DB) {
 func ViewEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("View An Entry")
+	fmt.Println("View An Entry\n")
 
 	fmt.Println("Input date of journal entry to view (MM-DD-YYYY):")
 	journalDate, err := reader.ReadString('\n')
@@ -109,7 +111,7 @@ func ViewEntry(db *sql.DB) {
 
 // ViewEntireJournal prints every date and entry of journal_entries
 func ViewEntireJournal(db *sql.DB) {
-	fmt.Println("View All Entries")
+	fmt.Println("View All Entries\n")
 
 	rows, err := db.Query("SELECT * FROM journal_entries ORDER BY date")
 	if err != nil {
@@ -133,11 +135,11 @@ func DeleteEntry(db *sql.DB) {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Delete An Entry")
+	fmt.Println("Delete An Entry\n")
 
 	for {
 		fmt.Println("Input date of journal entry to delete (MM-DD-YYYY):")
-		journalDate, err := reader.ReadString('\n')
+		journalDate, err = reader.ReadString('\n')
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -166,7 +168,7 @@ func DeleteEntry(db *sql.DB) {
 func DeleteJournal(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Delete All Entries")
+	fmt.Println("Delete All Entries\n")
 
 	for {
 		fmt.Print("Are you sure you want to delete all of your entries? (Y/n): ")
@@ -207,7 +209,7 @@ func EditEntry(db *sql.DB) {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Edit an Entry")
+	fmt.Println("Edit an Entry\n")
 
 	for {
 		fmt.Println("Input date of journal entry to edit:")
