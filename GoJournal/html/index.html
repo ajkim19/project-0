@@ -6,12 +6,29 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     </head>
     <body>
-        <h1>Welcome to GoJournal!</h1>
-        <a href="/edit">Edit</a>
-
-        <form action="/GoJournal" method="POST">
-            <input type="text" name="name" placeholder="Type your journal entry"/>
-            <button type="submit">Add Entry</button>
-        </form>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h1 style="text-align:center;">Welcome to GoJournal!</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col"></div>
+                <div class="col">
+                    <a href="/edit">Edit</a>
+                </div>
+                <div class="col"></div>
+            </div>
+            <div class="row">
+                <div class="col"></div>
+                <div class="col">
+                    <form action="/GoJournal" method="POST">
+                        <input type="text" name="name" placeholder="Type your journal entry"/>
+                        <button type="submit">Add Entry</button>
+                    </form>
+                </div>
+                <div class="col"></div>
+            </div>
+        </div>
     </body>
 </html>
