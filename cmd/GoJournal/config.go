@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -36,12 +37,20 @@ func init() {
 	fmt.Println("| Welcome to GoJournal! |")
 	fmt.Print("|_______________________|\n\n")
 
-	fmt.Print("Please enter username: ")
-	username, err = reader.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
+	for {
+		fmt.Print("Please enter username: ")
+		username, err = reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+		username = username[:len(username)-1]
+
+		if strings.ContainsAny(username, " !@#$%^&*()[]{}`~:;<>,./\\+*\"?'") == false {
+			break
+		}
+
+		fmt.Println("Invalid username. Please Try again")
 	}
-	username = username[:len(username)-1]
 
 	// Makes a handle for the database journal
 	dataSourceName := fmt.Sprintf("./databases/%s.db", username)
