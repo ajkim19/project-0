@@ -37,6 +37,7 @@ func init() {
 	fmt.Println("| Welcome to GoJournal! |")
 	fmt.Print("|_______________________|\n\n")
 
+	// Prompts for username
 	for {
 		fmt.Print("Please enter username: ")
 		username, err = reader.ReadString('\n')
