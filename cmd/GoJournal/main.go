@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/ajkim19/project-0/pkg/journal"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -11,11 +9,6 @@ import (
 func main() {
 	// Closes the database once the program has finished
 	defer database.Close()
-
-	fmt.Println(" _______________________")
-	fmt.Println("|                       |")
-	fmt.Println("| Welcome to GoJournal! |")
-	fmt.Println("|_______________________|\n")
 
 	switch flag1 {
 	case "date":
@@ -28,7 +21,7 @@ func main() {
 		}
 	case "delete":
 		if flag2 == "all" {
-			journal.DeleteJournal(database)
+			journal.DeleteJournal(database, username)
 		} else {
 			journal.DeleteEntry(database)
 		}

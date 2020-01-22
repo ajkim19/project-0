@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -10,22 +12,40 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var date bool        // Flag to input an entry for a particular date
-var view bool        // Flag to view table journal_entries
-var delete bool      // Flag to delete from table journal_entries
-var edit bool        // Flag to edit journal_entries
-var all bool         // Flag to apply alteration to the entire table of journal_entries
-var flag1 string     // First flag string
-var flag2 string     // Second flag string
-var database *sql.DB // Pointer to database handle
-var err error        // Temporary storage of error value
-var dbid int         // Temporary storage of id value of table journal_entries
-var dbdate string    // Temporary storage of date value of table journal_entries
-var dbentry string   // Temporary storage of entry value of table journal_entries
+var (
+	username string  // Username of journal
+	date     bool    // Flag to input an entry for a particular date
+	view     bool    // Flag to view table journal_entries
+	delete   bool    // Flag to delete from table journal_entries
+	edit     bool    // Flag to edit journal_entries
+	all      bool    // Flag to apply alteration to the entire table of journal_entries
+	flag1    string  // First flag string
+	flag2    string  // Second flag string
+	database *sql.DB // Pointer to database handle
+	err      error   // Temporary storage of error value
+	dbid     int     // Temporary storage of id value of table journal_entries
+	dbdate   string  // Temporary storage of date value of table journal_entries
+	dbentry  string  // Temporary storage of entry value of table journal_entries
+)
 
 func init() {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println(" _______________________")
+	fmt.Println("|                       |")
+	fmt.Println("| Welcome to GoJournal! |")
+	fmt.Print("|_______________________|\n\n")
+
+	fmt.Print("Please enter username: ")
+	username, err = reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+	username = username[:len(username)-1]
+
 	// Makes a handle for the database journal
-	database, err = sql.Open("sqlite3", "../../journal.db")
+	dataSourceName := fmt.Sprintf("./databases/%s.db", username)
+	database, err = sql.Open("sqlite3", dataSourceName)
 	if err != nil {
 		log.Fatal(err)
 	}
