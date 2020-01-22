@@ -234,6 +234,29 @@ func EditEntry(db *sql.DB) {
 		fmt.Println("Incorrect date format. Please try again.")
 	}
 
+	rows, err := db.Query(`SELECT * FROM journal_entries WHERE date = ?`, journalDate)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	dateExists := false
+
+	for rows.Next() {
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if journalDate == dbdate {
+			dateExists = true
+		}
+	}
+
+	if dateExists == false {
+		fmt.Println("An entry for this date does not exists.")
+		os.Exit(0)
+	}
+
 	printEntry(db, journalDate)
 
 	fmt.Println("Input replacement entry:")
