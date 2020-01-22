@@ -53,8 +53,40 @@ func init() {
 		fmt.Println("Invalid username. Please Try again")
 	}
 
-	// Makes a handle for the database journal
 	dataSourceName := fmt.Sprintf("./databases/%s.db", username)
+
+	// Detects if database file exists
+	var _, err = os.Stat(dataSourceName)
+
+	if os.IsNotExist(err) {
+		fmt.Println("\nA journal for this username does not exist.")
+		for {
+			fmt.Print("Would you like to create one (Y/n): ")
+			choice, err := reader.ReadString('\n')
+			if err != nil {
+				log.Fatal(err)
+			}
+			choice = choice[:len(choice)-1]
+
+			// Checks to see if the input is valid
+			matched, err := regexp.MatchString(`[Y]|[n]`, choice)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if matched == true {
+				if choice == "Y" {
+					break
+				} else {
+					os.Exit(0)
+				}
+			}
+			fmt.Println("Not a valid choice. Please try again.")
+		}
+	} else if err != nil {
+		log.Fatal(err)
+	}
+
+	// Makes a handle for the database journal
 	database, err = sql.Open("sqlite3", dataSourceName)
 	if err != nil {
 		log.Fatal(err)

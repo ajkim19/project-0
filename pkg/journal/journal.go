@@ -162,6 +162,8 @@ func DeleteEntry(db *sql.DB) {
 	}
 	defer statement.Close()
 	statement.Exec(journalDate)
+
+	fmt.Printf("\nEntry for %s has been deleted.\n", journalDate)
 }
 
 // DeleteJournal deletes the entire table of journal_entries
@@ -188,7 +190,8 @@ func DeleteJournal(db *sql.DB, username string) {
 			if choice == "Y" {
 				break
 			} else {
-				return
+				fmt.Println("\nExiting GoJournal")
+				os.Exit(0)
 			}
 		}
 		fmt.Println("Not a valid choice. Please try again.")
@@ -199,6 +202,8 @@ func DeleteJournal(db *sql.DB, username string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Printf("\nJournal for %s has been deleted.\n", username)
 }
 
 // EditEntry replaces the entry of a particular date
