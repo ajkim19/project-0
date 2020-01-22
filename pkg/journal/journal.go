@@ -253,6 +253,20 @@ func EditEntry(db *sql.DB) {
 	printEntry(db, journalDate)
 }
 
+// Help prints out the possible flags to use onto the console
+func Help() {
+	fmt.Println("The available flags are the following:")
+	fmt.Println("")
+	fmt.Println("\t(default)\t- Allows you to input a journal entry to the date it is written.",
+		"\n\t-date\t\t- Allows you to specify a date to your journal entry",
+		"\n\t-edit\t\t- Allows you to edit an existing journal entry at a specified date.",
+		"\n\t-view\t\t- Allows you to view an existing journal entry at a specified date.",
+		"\n\t-delete\t\t- Allows you to delete an existing journal entry at a specified date.",
+		"\n\t-all\t\t- When following a -view or a -delete flag, the followed feature will apply to the entire journal.")
+	fmt.Println("")
+	os.Exit(0)
+}
+
 // ifEntryExists checks to see if an entry for a certain date already exists
 // in the table journal_entires in a specified SQL database.
 func ifEntryExists(db *sql.DB, journalEntry string, journalDate string) {
