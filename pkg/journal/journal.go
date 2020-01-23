@@ -124,7 +124,7 @@ func ViewEntireJournal(db *sql.DB) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("\n" + dbdate + ":\n" + dbentry)
+		fmt.Println(dbdate + ":\n" + dbentry)
 	}
 }
 
