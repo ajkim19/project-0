@@ -50,8 +50,8 @@ func TestViewEntireJournal(t *testing.T) {
 	out, _ := ioutil.ReadAll(r)
 	os.Stdout = rescueStdout
 
-	if string(out) != "\n01-01-2020:\nToday is New Year's Day!\n01-02-2020:\nIt's the day after New Year's Day!\n\n" {
-		t.Errorf("Got:\n%v\nExpected:\n01-01-2020:\nToday is New Year's Day!\n01-02-2020:\nIt's the day after New Year's Day!\n\n", string(out))
+	if string(out) != "\nView All Entries\n\n01-01-2020:\nToday is New Year's Day!\n01-02-2020:\nIt's the day after New Year's Day!\n" {
+		t.Errorf("Got:\n%v\nExpected:\nView All Entries\n\n01-01-2020:\nToday is New Year's Day!\n01-02-2020:\nIt's the day after New Year's Day!\n", string(out))
 	}
 }
 
@@ -77,6 +77,7 @@ func TestPrintEntry(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	statement.Exec()
 
 	rescueStdout := os.Stdout
 	r, w, _ := os.Pipe()
@@ -88,7 +89,7 @@ func TestPrintEntry(t *testing.T) {
 	out, _ := ioutil.ReadAll(r)
 	os.Stdout = rescueStdout
 
-	if string(out) != "\n01-01-2020:\nToday is New Year's Day!\n\n" {
+	if string(out) != "\n01-01-2020:\nToday is New Year's Day!\n" {
 		t.Errorf("Got:\n%v\nExpected:\n01-01-2020:\nToday is New Year's Day!\n\n", string(out))
 	}
 }

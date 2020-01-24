@@ -22,7 +22,7 @@ var dbentry string // entry value of table journal_entries
 func InputEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Add An Entry For Today\n")
+	fmt.Print("\nAdd An Entry For Today\n\n")
 
 	journalDate := string(time.Now().Format("01-02-2006"))
 
@@ -47,7 +47,7 @@ func InputEntryDate(db *sql.DB) {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Add An Entry For Another Date\n")
+	fmt.Print("\nAdd An Entry For Another Date\n\n")
 
 	for {
 		fmt.Println("Input date (MM-DD-YYYY): ")
@@ -84,7 +84,7 @@ func InputEntryDate(db *sql.DB) {
 func ViewEntry(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("View An Entry\n")
+	fmt.Print("\nView An Entry\n\n")
 
 	fmt.Println("Input date of journal entry to view (MM-DD-YYYY):")
 	journalDate, err := reader.ReadString('\n')
@@ -111,7 +111,7 @@ func ViewEntry(db *sql.DB) {
 
 // ViewEntireJournal prints every date and entry of journal_entries
 func ViewEntireJournal(db *sql.DB) {
-	fmt.Println("View All Entries\n")
+	fmt.Print("\nView All Entries\n\n")
 
 	rows, err := db.Query("SELECT * FROM journal_entries ORDER BY date")
 	if err != nil {
@@ -135,7 +135,7 @@ func DeleteEntry(db *sql.DB) {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Delete An Entry\n")
+	fmt.Print("\nDelete An Entry\n")
 
 	for {
 		fmt.Println("Input date of journal entry to delete (MM-DD-YYYY):")
@@ -162,16 +162,18 @@ func DeleteEntry(db *sql.DB) {
 	}
 	defer statement.Close()
 	statement.Exec(journalDate)
+
+	fmt.Printf("\nEntry for %s has been deleted.\n", journalDate)
 }
 
 // DeleteJournal deletes the entire table of journal_entries
-func DeleteJournal(db *sql.DB) {
+func DeleteJournal(db *sql.DB, username string) {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Delete All Entries\n")
+	fmt.Print("\nDelete Entire Journal\n\n")
 
 	for {
-		fmt.Print("Are you sure you want to delete all of your entries? (Y/n): ")
+		fmt.Print("Are you sure you want to delete your entire journal? (Y/n): ")
 
 		choice, err := reader.ReadString('\n')
 		if err != nil {
@@ -188,18 +190,20 @@ func DeleteJournal(db *sql.DB) {
 			if choice == "Y" {
 				break
 			} else {
-				return
+				fmt.Println("\nExiting GoJournal")
+				os.Exit(0)
 			}
 		}
 		fmt.Println("Not a valid choice. Please try again.")
 	}
 
-	statement, err := db.Prepare("DROP TABLE journal_entries")
+	dataSource := fmt.Sprintf("./databases/%s.db", username)
+	err := os.Remove(dataSource)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer statement.Close()
-	statement.Exec()
+
+	fmt.Printf("\nJournal for %s has been deleted.\n", username)
 }
 
 // EditEntry replaces the entry of a particular date
@@ -209,7 +213,7 @@ func EditEntry(db *sql.DB) {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Edit an Entry\n")
+	fmt.Print("\nEdit an Entry\n\n")
 
 	for {
 		fmt.Println("Input date of journal entry to edit:")
@@ -230,6 +234,29 @@ func EditEntry(db *sql.DB) {
 		fmt.Println("Incorrect date format. Please try again.")
 	}
 
+	rows, err := db.Query(`SELECT * FROM journal_entries WHERE date = ?`, journalDate)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	dateExists := false
+
+	for rows.Next() {
+		err := rows.Scan(&dbid, &dbdate, &dbentry)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if journalDate == dbdate {
+			dateExists = true
+		}
+	}
+
+	if dateExists == false {
+		fmt.Println("An entry for this date does not exists.")
+		os.Exit(0)
+	}
+
 	printEntry(db, journalDate)
 
 	fmt.Println("Input replacement entry:")
@@ -247,6 +274,20 @@ func EditEntry(db *sql.DB) {
 	statement.Exec(journalEntry, journalDate)
 
 	printEntry(db, journalDate)
+}
+
+// Help prints out the possible flags to use onto the console
+func Help() {
+	fmt.Println("The available flags are the following:")
+	fmt.Println("")
+	fmt.Println("\t(default)\t- Allows you to input a journal entry to the date it is written.",
+		"\n\t-date\t\t- Allows you to specify a date to your journal entry",
+		"\n\t-edit\t\t- Allows you to edit an existing journal entry at a specified date.",
+		"\n\t-view\t\t- Allows you to view an existing journal entry at a specified date.",
+		"\n\t-delete\t\t- Allows you to delete an existing journal entry at a specified date.",
+		"\n\t-all\t\t- When following a -view or a -delete flag, the followed feature will apply to the entire journal.")
+	fmt.Println("")
+	os.Exit(0)
 }
 
 // ifEntryExists checks to see if an entry for a certain date already exists
@@ -314,6 +355,6 @@ func printEntry(db *sql.DB, journalDate string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(dbdate + ":\n" + dbentry)
+		fmt.Println("\n" + dbdate + ":\n" + dbentry)
 	}
 }
