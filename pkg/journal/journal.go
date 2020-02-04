@@ -24,7 +24,7 @@ func InputEntry(db *sql.DB) {
 
 	fmt.Print("\nAdd An Entry For Today\n\n")
 
-	journalDate := string(time.Now().Format("01-02-2006"))
+	journalDate := string(time.Now().Format("2006-01-02"))
 
 	fmt.Printf("Input journal entry for %s:\n", journalDate)
 	journalEntry, err := reader.ReadString('\n')
