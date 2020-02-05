@@ -80,6 +80,8 @@ func init() {
 
 func GoJournalHTML(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "text/html")
+
 	var journalDate string = r.FormValue("date")
 
 	// Checks to see if the inputted date is in the correct format
