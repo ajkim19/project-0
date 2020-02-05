@@ -2,17 +2,14 @@ package journalhtml
 
 import (
 	"database/sql"
-	"encoding/base64"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/ajkim19/project-0/pkg/templates"
-	"github.com/ajkim19/project-1/pkg/logger"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -30,12 +27,8 @@ var dbdate string    // Temporary reference to date value of table journal_entri
 var dbentry string   // Temporary reference to entry value of table journal_entries
 var rows *sql.Rows
 var username string = "journal"
-var revproxyauth = os.Getenv("REVPROXYAUTH")
-var basicAuth string
 
 func init() {
-	basicAuth = "Basic " + base64.StdEncoding.EncodeToString([]byte(revproxyauth))
-
 	dataSourceName := fmt.Sprintf("./GoJournal/databases/%s.db", username)
 
 	// Makes a handle for the database journal
@@ -86,14 +79,6 @@ func init() {
 }
 
 func GoJournalHTML(w http.ResponseWriter, r *http.Request) {
-
-	requestAddr := r.RemoteAddr
-
-	if r.Header.Get("Proxy-Authorization") != basicAuth {
-		logger.Logger.Printf("Unauthorized client: %s\n", requestAddr)
-	}
-
-	w.Header().Set("Content-Type", "text/html")
 
 	var journalDate string = r.FormValue("date")
 
