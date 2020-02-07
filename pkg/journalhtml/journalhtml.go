@@ -29,7 +29,8 @@ var rows *sql.Rows
 var username string = "journal"
 
 func init() {
-	dataSourceName := fmt.Sprintf("./GoJournal/databases/%s.db", username)
+	dataSourceName := fmt.Sprintf("./databases/%s.db", username)
+	//or use dataSourceName := fmt.Sprintf("./databases/%s.db", username)
 
 	// Makes a handle for the database journal
 	database, err = sql.Open("sqlite3", dataSourceName)
@@ -79,7 +80,6 @@ func init() {
 }
 
 func GoJournalHTML(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "text/html")
 
 	var journalDate string = r.FormValue("date")
